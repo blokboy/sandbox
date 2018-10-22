@@ -1,12 +1,26 @@
 import React, { Component } from 'react'
+import MessageList from './MessageList.js'
+import SendMessageForm from './SendMessageForm.js'
 import Chatkit from '@pusher/chatkit'
 
 export default class ChatScreen extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      currentUser: {}
+      currentUser: {},
+      currentRoom: {},
+      messages: []
     }
+    this.sendMessage = this.sendMessage.bind(this)
+  }
+
+  sendMessage(text) {
+    console.log(this.state.currentUser)
+    console.log(this.state.currentRoom)
+    this.state.currentUser.sendMessage({
+      text,
+      roomId: this.state.currentRoom.id
+    })
   }
 
   componentDidMount() {
@@ -22,6 +36,20 @@ export default class ChatScreen extends Component {
       .connect()
       .then(currentUser => {
         this.setState({ currentUser })
+        return currentUser.subscribeToRoom({
+          roomId: 18694123,
+          messageLimit: 100,
+          hooks: {
+            onNewMessage: message => {
+              this.setState({
+                messages: [...this.state.messages, message],
+              })
+            }
+          }
+        })
+      })
+      .then(currentRoom => {
+        this.setState({ currentRoom })
       })
       .catch(e => console.error('error: ', e))
    }
@@ -50,6 +78,9 @@ export default class ChatScreen extends Component {
         width: '85%',
         display: 'flex',
         flexDirection: 'column'
+      },
+      chatList: {
+
       }
     }
 
@@ -60,7 +91,11 @@ export default class ChatScreen extends Component {
             <h2>Whos Online Placeholder</h2>
           </aside>
           <section style={styles.chatListContainer}>
-            <h2>Chat Placeholder</h2>
+            <MessageList
+              messages={this.state.messages}
+              style={styles.chatList}
+            />
+            <SendMessageForm onSubmit={this.sendMessage} style={styles.chatList}/>
           </section>
         </div>
        </div>

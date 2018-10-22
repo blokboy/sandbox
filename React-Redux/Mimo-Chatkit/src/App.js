@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import UsernameForm from './components/UsernameForm.js'
 import ChatScreen from './components/ChatScreen.js'
+import axios from 'axios'
 
 export default class App extends Component {
   constructor() {
@@ -13,21 +14,16 @@ export default class App extends Component {
   }
 
   onUsernameSubmitted = (username) => {
-    fetch('http://localhost:3333/users', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ username })
-    })
-      .then(response => {
+    axios
+      .post('http://localhost:3333/users', username)
+      .then(res => {
         this.setState({
           currentUsername: username,
           currentScreen: 'ChatScreen'
-        })
+        }, this.props.history.push('/'))
       })
       .catch(e => console.error('error: ', e))
-   }
+  }
 
   render() {
     if(this.state.currentScreen === 'WhatIsYourUsernameScreen') {
